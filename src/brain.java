@@ -23,6 +23,21 @@ import lejos.nxt.*;
  */
 
 public class brain {
+	/* *****************************
+	 * VARIABLE DECLARATION
+	 * *****************************/
+	
+	/*
+	 * OBJECTS
+	 */
+	movingSensor sensor = new movingSensor();
+	monitor monitor = new monitor();
+	engine engine = new engine();
+	
+
+	/* *****************************
+	 * METHODS
+	 * *****************************/
 	public static void main(String[] args)throws Exception {
 		
 	}

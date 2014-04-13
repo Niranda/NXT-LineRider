@@ -24,12 +24,12 @@ import lejos.robotics.navigation.DifferentialPilot;
 
 /*
  * Description
- * 	
+ * 	Simple Klasse zum einfachen Liniefahren (ohne bewegtem Sensor)
  */
 
 
 public class LineRider {
-	static DifferentialPilot robot = new DifferentialPilot(5.6f,13.0f,Motor.A, Motor.C); 	// Pilot-Objekt Erzeugung (Raddurchmesser, Abstand, Motor1, Motor2)
+	static DifferentialPilot robot = new DifferentialPilot(5.5,10.5,Motor.A, Motor.C); 	// Pilot-Objekt Erzeugung (Raddurchmesser, Abstand, Motor1, Motor2)
 
 	public static void main(String[] args)throws Exception { 
 		Button.ENTER.waitForPressAndRelease();												// Erst starten, wenn Enter gedrückt..
@@ -39,12 +39,12 @@ public class LineRider {
 		int gesamt = 0;																		// gesamter Drehinterwall 
 		int i = 1;																			// Varible zum bestimmen ob recht oder links drehen um nach der Linie zu suchen 
 
-		robot.setTravelSpeed(400); 															// Geschwindigkeit setzen
+		robot.setTravelSpeed(200); 															// Geschwindigkeit setzen
 
 		
 		while (!Button.ESCAPE.isDown()) { 													// Wdh. solange Esc. nicht gedrückt wurde
 			ausgabe(ls.readNormalizedValue());																// LCD Ausgabe des gesamten Drehinterwalls
-/*
+			
 			if (ls.readNormalizedValue() <= 400) {											// Sensorwert <=400 -> Schwarz
 				robot.forward(); 
 				gesamt = 0;																	// gesamt wird auf 0 zurückgesetzt 
@@ -75,7 +75,7 @@ public class LineRider {
 					} 
 				} 
 			} 
-			*/
+
 		} 
 	}
 
