@@ -34,14 +34,23 @@ public class movingSensor {
 	
 	private static int maxLeft;																	// maximale Sensorstellung: links
 	private static int maxRight;																// maximale Sensorstellung: rechts
-	private static int direction = 0;															// aktuelle Sensorposition
+	private static int position = 0;															// aktuelle Sensorposition
 	
 	private static boolean go = true;															// TRUE = arbeitend, FALSE = nicht arbeitend
+	private static int direction = 1;															// Sensor Bewegungsrichtung (1 = right, -1 = left)
+	private static int lastDirection;															// Direction before change
+	private static int sensorSpeed = 300;
+	
+	private static int hardwareLagg = 100;														// Thread sleeping for ...ms to compensate the hardware-lagg
+	private static int brakingCompensation;														// the faster the sensor, the higher the braking distance - a balancer
+	
+	
 	
 	/*
 	 * OBJECTS
 	 */
 	private static LightSensor ls = new LightSensor(SensorPort.S1);								// LightSensor initiieren
+	
 	
 	/*
 	 * DEFAULTS
@@ -50,10 +59,11 @@ public class movingSensor {
 	private static int defaultColorBlack = 320;
 	private static int defaultColorTolerance = 25;
 	
-	private static int defaultMaxLeft = -90;
-	private static int defaultMaxRight = 90;
+	private static int defaultMaxLeft = -60;													// 1 sensor-degree == 1,5 degree
+	private static int defaultMaxRight = 60;
 	
 
+	
 	/* *****************************
 	 * METHODS
 	 * *****************************/
@@ -62,22 +72,23 @@ public class movingSensor {
 	 * main method
 	 */
 	public static void main(String[] args)throws Exception  {
-		while (!Button.ESCAPE.isDown()) {
-			LCD.drawString("Posi 0", 1, 1);
-			LCD.drawString("Enter!", 1, 2);
-			
-			if (Button.RIGHT.isDown()) {
-				Motor.B.rotate(-5);
-			}
-			else if (Button.LEFT.isDown()) {
-				Motor.B.rotate(5);
-			}
-			else if (Button.ENTER.isDown()) {
-				Motor.B.resetTachoCount();
-			}
-		
-			LCD.drawInt(Motor.C.getPosition(), 1, 3);
-		}
+//		while (!Button.ESCAPE.isDown()) {
+//			LCD.drawString("Posi 0", 1, 1);
+//			LCD.drawString("Enter!", 1, 2);
+//			
+//			if (Button.RIGHT.isDown()) {
+//				Motor.B.rotate(-5);
+//			}
+//			else if (Button.LEFT.isDown()) {
+//				Motor.B.rotate(5);
+//			}
+//			else if (Button.ENTER.isDown()) {
+//				Motor.B.resetTachoCount();
+//			}
+//		
+//			LCD.drawInt(Motor.C.getPosition(), 1, 3);
+//		}
+		searchLine();
 		
 	}
 	
@@ -86,32 +97,89 @@ public class movingSensor {
 	 * OPERATIONS
 	 * *****************************/
 	
-	
-	public static void searchLine() {
+	/**
+	 * Sensor will find and follow the black line.
+	 * The variable 'position' will be set to the current position of the sensor. 
+	 * @throws InterruptedException 
+	 */
+	public static void searchLine() throws InterruptedException {
+		Motor.B.resetTachoCount();
+		setSpeed(sensorSpeed);
+		
+		setDefaultColor();
+		setDefaultMovement();
+		
 		while(go) {
-			
-			
-			while (Motor.B.isMoving()) {
-				if (Motor.B.getTachoCount() * -1 <= maxLeft ||
-						Motor.B.getTachoCount() * -1 >= maxRight) {
-					// RICHTUNG UMKEHREN TODO
-				}
-				else {
-					if (ls.readNormalizedValue() >= (colorWhite - colorTolerance) &&							// Detected white surface
-						ls.readNormalizedValue() <= (colorWhite + colorTolerance)) {
-						
-					}
-					else if (	ls.readNormalizedValue() >= (colorBlack - colorTolerance) &&					// Detected black surface
-								ls.readNormalizedValue() <= (colorBlack + colorTolerance)) {
-						
-					}
-					else {																						// Detected sth. other...
-						/* ??? */
-					}
-				}
-				
+			if (direction == 1) {
+				Motor.B.backward();
 			}
 			
+			if (direction == -1) {
+				Motor.B.forward();
+			}
+
+			Thread.sleep(hardwareLagg);																		// compensate hardware-lagg
+			
+			while (checkMovingRange()) {																	// sensor is in range...
+				
+//				if (checkColor(colorWhite)) {																// Detected white surface
+//					//foundWhiteSurface = true;
+//					//reverseDirection();
+//				}
+//				else if (checkColor(colorBlack)) {															// Detected black surface
+//					//foundBlackSurface = true;
+//				}
+//				else {																						// Detected sth. other...
+//					/* ??? */
+//				}
+				
+				if (Button.ESCAPE.isDown()) { break; }
+			}
+			
+			reverseDirection();
+			
+			if (Button.ESCAPE.isDown()) { break; }
+		}
+	}
+	
+	
+	/**
+	 * This will reverse the moving direction of the sensor.
+	 */
+	private static void reverseDirection() {
+		Motor.B.stop();
+		direction = direction * -1;
+	}
+	
+	
+	/**
+	 * Check, if a given color is in the tolerance-range
+	 * 
+	 * @param paraColor color which should be checked
+	 */
+	private static boolean checkColor(int paraColor) {
+		if (ls.readNormalizedValue() >= (paraColor - colorTolerance) &&
+			ls.readNormalizedValue() <= (paraColor + colorTolerance))
+		{
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * Check, if the sensor is in the moving-range
+	 */
+	private static boolean checkMovingRange() {
+		if (Motor.B.getTachoCount() * -1 > maxLeft + brakingCompensation &&								// sensor is in range
+			Motor.B.getTachoCount() * -1 < maxRight - brakingCompensation)
+		{
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 	
@@ -130,6 +198,17 @@ public class movingSensor {
 	/* *****************************
 	 * SETTER
 	 * *****************************/
+	
+	/**
+	 * Set the moving-speed of the sensor and calculate some extra space for
+	 * an extra breaking-range
+	 * 
+	 * @param paraSpeed
+	 */
+	private static void setSpeed(int paraSpeed) {
+		Motor.B.setSpeed(paraSpeed);
+		brakingCompensation = Math.round((paraSpeed / 200) * 10);
+	}
 	
 	/**
 	 * set color-reflections
