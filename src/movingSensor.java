@@ -34,7 +34,10 @@ public class movingSensor {
 	
 	private static int maxLeft;																	// maximale Sensorstellung: links
 	private static int maxRight;																// maximale Sensorstellung: rechts
-	private static int position = 0;															// aktuelle Sensorposition
+	
+	private static int linePosition = 0;														// line's position in normal degree
+	private static int lastPosition = 0;														// last seen position
+	private static int penultimatePosition = 0;													// penultimated position (last memorized)
 	
 	private static boolean 	go = true;															// TRUE = arbeitend, FALSE = nicht arbeitend
 	private static int 		direction = 1;														// Sensor Bewegungsrichtung (1 = right, -1 = left)
@@ -45,9 +48,8 @@ public class movingSensor {
 	private static int 		reverseCounter = 0;													// reverse-counter, if there wasn't a black-found before
 	
 	private static int hardwareLagg = 100;														// Thread sleeping for ...ms to compensate the hardware-lagg
-	private static int sensorSpeed = 300;														// speed of the sensor, calculates braking-distance
+	private static int sensorSpeed = 10;														// speed of the sensor, calculates braking-distance
 	private static int brakingCompensation;														// the faster the sensor, the higher the braking-distance - a balancer
-	
 	
 	
 	/*
@@ -68,6 +70,7 @@ public class movingSensor {
 	
 
 	
+	
 	/* *****************************
 	 * METHODS
 	 * *****************************/
@@ -76,30 +79,9 @@ public class movingSensor {
 	 * main method
 	 */
 	public static void main(String[] args)throws Exception  {
-//		while (!Button.ESCAPE.isDown()) {
-//			LCD.drawString("Posi 0", 1, 1);
-//			LCD.drawString("Enter!", 1, 2);
-//			
-//			if (Button.RIGHT.isDown()) {
-//				Motor.B.rotate(-5);
-//			}
-//			else if (Button.LEFT.isDown()) {
-//				Motor.B.rotate(5);
-//			}
-//			else if (Button.ENTER.isDown()) {
-//				Motor.B.resetTachoCount();
-//			}
-//		
-//			LCD.drawInt(Motor.C.getPosition(), 1, 3);
-//		}
-		searchLine();
-		
+//		searchLine();
 	}
 	
-	
-	/* *****************************
-	 * OPERATIONS
-	 * *****************************/
 	
 	/**
 	 * Sensor will find and follow the black line.
@@ -122,31 +104,32 @@ public class movingSensor {
 			if (direction == 1) {
 				Motor.B.backward();
 			}
-			
-			if (direction == -1) {
+			else if (direction == -1) {
 				Motor.B.forward();
 			}
 
-			Thread.sleep(hardwareLagg);																		// compensate hardware-lagg
+			Thread.sleep(hardwareLagg);																// compensate hardware-lagg
 			
-			while (checkMovingRange() && !changeDirection) {												// sensor is in range...
+			while (checkMovingRange() && !changeDirection && go) {									// sensor is in range...
 				
-				if (checkColor(colorWhite)) {																// Detected white surface
-					
+				if (checkColor(colorWhite) && foundBlack) {											// Detected white surface after a black surface
+					changeDirection = true;
 				}
-				else if (checkColor(colorBlack)) {															// Detected black surface
+				else if (checkColor(colorBlack)) {													// Detected black surface
 					foundBlack = true;
 				}
-				else {																						// Detected sth. other...
+				else {																				// Detected sth. other...
 					/* ignore */
 				}
-				
-				if (Button.ESCAPE.isDown()) { break; }
+//				if (Button.ESCAPE.isDown()) { break; }
+//				LCD.drawInt(Motor.B.getTachoCount(), 5, 5);
 			}
 			
 			reverseDirection();
-			
-			if (Button.ESCAPE.isDown()) { break; }
+//			LCD.drawInt(linePosition, 1, 1);
+//			LCD.drawInt(lastPosition, 2, 2);
+//			LCD.drawInt(penultimatePosition, 3, 3);
+//			if (Button.ESCAPE.isDown()) { break; }
 		}
 	}
 	
@@ -155,16 +138,23 @@ public class movingSensor {
 	 * This will reverse the moving direction of the sensor.
 	 */
 	private static void reverseDirection() {
-		Motor.B.stop();
-		direction = direction * -1;
+		Motor.B.stop();																				// stop the motor
+		direction = direction * -1;																	// reverse the moving-direction
 		
-		if (foundBlack) {
-			blackBeforeReverse = true;
-			foundBlack = false;
-			reverseCounter = 0;
+		if (foundBlack) {																			// If black surface was found...
+			blackBeforeReverse = true;																// ...found black before reverse -> true
+			foundBlack = false;																		// ...in this direction nothing black was found (yet)
+			reverseCounter = 0;																		// ...reset direction-change-counter
+			
+			if (getRealTachoCount() != lastPosition) {												// if new position isn't the same as last position...
+				penultimatePosition = lastPosition;													// ...last got memorized
+				lastPosition = getRealTachoCount();													// ...yeah, this position is now the last one
+				
+				calcLinePosition();																	// ...go, do it!
+			}
 		}
-		else {
-			reverseCounter++;
+		else {																						// No black surface was found...
+			reverseCounter++;																		// ...count that fail!
 		}
 	}
 	
@@ -175,12 +165,12 @@ public class movingSensor {
 	 * @param paraColor color which should be checked
 	 */
 	private static boolean checkColor(int paraColor) {
-		if (ls.readNormalizedValue() >= (paraColor - colorTolerance) &&
+		if (ls.readNormalizedValue() >= (paraColor - colorTolerance) &&								// yeah, it's the color!
 			ls.readNormalizedValue() <= (paraColor + colorTolerance))
 		{
 			return true;
 		}
-		else {
+		else {																						// nope..
 			return false;
 		}
 	}
@@ -190,12 +180,12 @@ public class movingSensor {
 	 * Check, if the sensor is in the moving-range
 	 */
 	private static boolean checkMovingRange() {
-		if (Motor.B.getTachoCount() * -1 > maxLeft + brakingCompensation &&								// sensor is in range
-			Motor.B.getTachoCount() * -1 < maxRight - brakingCompensation)
+		if (getRealTachoCount() > maxLeft + brakingCompensation &&									// sensor is in range
+			getRealTachoCount() < maxRight - brakingCompensation)
 		{
 			return true;
 		}
-		else {
+		else {																						// sensor isn't in range
 			return false;
 		}
 	}
@@ -207,9 +197,10 @@ public class movingSensor {
 	 * @param paraOne one site of the position
 	 * @param paraTwo other site of the position
 	 */
-	private static int calcDirection(int paraOne, int paraTwo) {
-		return ((paraOne + paraTwo) / 2) * -1;															// Negation, wegen Übersetzung
+	private static void calcLinePosition() {
+		linePosition = (int) Math.round(((penultimatePosition + lastPosition) / 2) * 1.5);			// average * sensorDegree-to-normalDegree
 	}
+	
 	
 	
 	/* *****************************
@@ -224,7 +215,7 @@ public class movingSensor {
 	 */
 	private static void setSpeed(int paraSpeed) {
 		Motor.B.setSpeed(paraSpeed);
-		brakingCompensation = Math.round((paraSpeed / 200) * 10);
+		brakingCompensation = Math.round((paraSpeed / 200) * 10);									// calculate some extra braking-distance
 	}
 	
 	/**
@@ -244,8 +235,8 @@ public class movingSensor {
 	
 	/**
 	 * set sensor's "freedom of movement"
-	 * 	x < 0	Left
-	 *  x = 0	Center
+	 * 	x < 0	left
+	 *  x = 0	center
 	 *  x > 0	right
 	 * 
 	 * @param paraLeft maximum in the left (value lower then 0)
@@ -261,7 +252,7 @@ public class movingSensor {
 	 * Set the default values of color-reflections
 	 */
 	public static void setDefaultColor() {
-		setColor(defaultColorWhite, defaultColorBlack, defaultColorTolerance);					// White, Black, Tol.
+		setColor(defaultColorWhite, defaultColorBlack, defaultColorTolerance);						// White, Black, Tol.
 	}
 	
 	
@@ -269,7 +260,22 @@ public class movingSensor {
 	 * Set the default moving-range of th sensor
 	 */
 	public static void setDefaultMovement() {
-		setMovement(defaultMaxLeft, defaultMaxRight);											// left, right
+		setMovement(defaultMaxLeft, defaultMaxRight);												// left, right
+	}
+	
+	
+	
+	/* *****************************
+	 * GETTER
+	 * *****************************/
+	
+	/**
+	 * Returns negated Motor-Tacho-Count (2-factor-gearing)
+	 * 
+	 * @return negated TachoCount
+	 */
+	private static int getRealTachoCount() {
+		return Motor.B.getTachoCount() * -1;
 	}
 
 }
