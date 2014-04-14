@@ -36,13 +36,17 @@ public class movingSensor {
 	private static int maxRight;																// maximale Sensorstellung: rechts
 	private static int position = 0;															// aktuelle Sensorposition
 	
-	private static boolean go = true;															// TRUE = arbeitend, FALSE = nicht arbeitend
-	private static int direction = 1;															// Sensor Bewegungsrichtung (1 = right, -1 = left)
-	private static int lastDirection;															// Direction before change
-	private static int sensorSpeed = 300;
+	private static boolean 	go = true;															// TRUE = arbeitend, FALSE = nicht arbeitend
+	private static int 		direction = 1;														// Sensor Bewegungsrichtung (1 = right, -1 = left)
+	private static int 		lastDirection;														// Direction before change
+	private static boolean 	changeDirection = false;											// true, if direction-change is incoming (while-break)
+	private static boolean 	blackBeforeReverse = false;											// true, if before a reverse was black found, false if not
+	private static boolean 	foundBlack = false;													// set true, if black was found (just reverse set it false)
+	private static int 		reverseCounter = 0;													// reverse-counter, if there wasn't a black-found before
 	
 	private static int hardwareLagg = 100;														// Thread sleeping for ...ms to compensate the hardware-lagg
-	private static int brakingCompensation;														// the faster the sensor, the higher the braking distance - a balancer
+	private static int sensorSpeed = 300;														// speed of the sensor, calculates braking-distance
+	private static int brakingCompensation;														// the faster the sensor, the higher the braking-distance - a balancer
 	
 	
 	
@@ -99,7 +103,10 @@ public class movingSensor {
 	
 	/**
 	 * Sensor will find and follow the black line.
-	 * The variable 'position' will be set to the current position of the sensor. 
+	 * The variable 'position' will be set to the current position of the sensor.
+	 * 
+	 * At start the sensor has to be in center-position!
+	 * 
 	 * @throws InterruptedException 
 	 */
 	public static void searchLine() throws InterruptedException {
@@ -110,6 +117,8 @@ public class movingSensor {
 		setDefaultMovement();
 		
 		while(go) {
+			changeDirection = false;
+			
 			if (direction == 1) {
 				Motor.B.backward();
 			}
@@ -120,18 +129,17 @@ public class movingSensor {
 
 			Thread.sleep(hardwareLagg);																		// compensate hardware-lagg
 			
-			while (checkMovingRange()) {																	// sensor is in range...
+			while (checkMovingRange() && !changeDirection) {												// sensor is in range...
 				
-//				if (checkColor(colorWhite)) {																// Detected white surface
-//					//foundWhiteSurface = true;
-//					//reverseDirection();
-//				}
-//				else if (checkColor(colorBlack)) {															// Detected black surface
-//					//foundBlackSurface = true;
-//				}
-//				else {																						// Detected sth. other...
-//					/* ??? */
-//				}
+				if (checkColor(colorWhite)) {																// Detected white surface
+					
+				}
+				else if (checkColor(colorBlack)) {															// Detected black surface
+					foundBlack = true;
+				}
+				else {																						// Detected sth. other...
+					/* ignore */
+				}
 				
 				if (Button.ESCAPE.isDown()) { break; }
 			}
@@ -149,6 +157,15 @@ public class movingSensor {
 	private static void reverseDirection() {
 		Motor.B.stop();
 		direction = direction * -1;
+		
+		if (foundBlack) {
+			blackBeforeReverse = true;
+			foundBlack = false;
+			reverseCounter = 0;
+		}
+		else {
+			reverseCounter++;
+		}
 	}
 	
 	
