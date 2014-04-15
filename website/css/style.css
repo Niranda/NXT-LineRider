@@ -1,5 +1,5 @@
 html, body {
-	background: #fff;
+	background: black;
 	height: 100%;
 }
 
@@ -83,4 +83,5 @@ a:hover {
 .footer {
 	position: fixed;
 	bottom: 0px;
+	height: 45px;
 }

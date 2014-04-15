@@ -9,6 +9,7 @@
 		
 		<link rel="stylesheet" type="text/css" href="./css/reset.css" />
 		<link rel="stylesheet" type="text/css" href="./css/style.css" />
+		<link rel="stylesheet" type="text/css" href="./css/content.css" />
 		<link rel="stylesheet" type="text/css" href="./css/nav.css" />
 		
 		<link rel="stylesheet" type="text/css" href="./font-awesome/css/font-awesome.css">
@@ -16,6 +17,31 @@
 		<script src="js/jquery.min.js"></script>
 		
 		<script type="text/javascript">
+			$( document ).ready(function() {
+				changeBackground();
+			});
+			/* BACKGROUND CYCLING */
+			function changeBackground() {
+				var divid = '#bgHolder';		// the ID of the Div-Box
+				var path = './img/onTour/';		// Path to the images
+				var type = '.jpg';				// file-type of the images
+				var timeout = 10;				// timeout in seconds for image-change
+				var start = 1;					// Start at Image 1
+				var end = 32;					// End at Image 32
+				
+				var i = Math.floor((Math.random() * end) + start);
+				var opacity = $(divid).css('opacity');
+				
+				timeout = timeout * 1000;
+				
+				$(divid).fadeTo('slow', 0, function() {
+					$(divid).css('background-image', 'url('+ path + i + type +')');
+				}).fadeTo('slow', opacity).delay(timeout);
+				
+				changeBackground();
+			}
+			
+			/* SMOOTH SCROLLING */
 			$(function() {
 				$('a[href*=#]:not([href=#])').click(function() {
 					if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
@@ -36,26 +62,37 @@
 	<body>
 		<!-- SIDE-BAR -->
 		<div id="nav">
-		
-			<!-- LOGO -->
-			<div id="logo">
-				<div id="avatar"></div>
-				<div id="me">
-					<h1>Arne Wandt</h1>
-					<span>Wirtschaftsinformatiker</span>
-				</div>
-			</div>
+			<div id="topnavholder">
 			
-			<!-- NAVIGATION -->
+				<!-- LOGO -->
+				<div id="logo">
+					<div id="avatar"></div>
+					<div id="me">
+						<h1>Arne Wandt</h1>
+						<span>Wirtschaftsinformatiker & Oberimaginationsofficer</span>
+					</div>
+				</div>
+				
+				<!-- NAVIGATION -->
+				
+			</div>
 			
 			<!-- FOOTER / SOCIAL ICONS -->
 			<div class="footer" id="socialIcons">
-				<a href="http://twitter.com/Niranda"><i class="footerButton button fa fa-lg fa-twitter"></i></a>
-				<a href="https://www.facebook.com/profile.php?id=100008230500562"><i class="footerButton button fa fa-lg fa-facebook"></i></a>
-				<a href="#"><i class="footerButton button fa fa-lg fa-google-plus"></i></a>
-				<a href="#"><i class="footerButton button fa fa-lg fa-youtube"></i></a>
-				<a href="http://github.com/Niranda"><i class="footerButton button fa fa-lg fa-github"></i></a>
+				<a href="http://twitter.com/Niranda" target="_BLANK"><i class="footerButton button fa fa-lg fa-twitter"></i></a>
+				<a href="https://www.facebook.com/profile.php?id=100008230500562" target="_BLANK"><i class="footerButton button fa fa-lg fa-facebook"></i></a>
+				<a href="#" target="_BLANK"><i class="footerButton button fa fa-lg fa-google-plus"></i></a>
+				<a href="#" target="_BLANK"><i class="footerButton button fa fa-lg fa-youtube"></i></a>
+				<a href="http://github.com/Niranda" target="_BLANK"><i class="footerButton button fa fa-lg fa-github"></i></a>
 			</div>
+		</div>
+		
+		<!-- CONTENT-WINDOW -->
+		<div id="bgHolder">
+		</div>
+		<div class="content">
+			Ich bin tatsächlich ein bisschen Inhalt!<br />
+			Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />
 		</div>
 	</body>
 </html>
