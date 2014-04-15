@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<title>NiraBot NXT</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="Projektseite zum Projekt 'Mobile Agenten' der Hochschule Wismar" />
+		<meta name="keywords" content="HSWismar HSW NXT LEGO MINDSTORM LEJOS NIRABOT NIRANDA" />
+		
+		<link rel="stylesheet" type="text/css" href="./css/reset.css" />
+		<link rel="stylesheet" type="text/css" href="./css/style.css" />
+		<link rel="stylesheet" type="text/css" href="./css/nav.css" />
+		
+		<link rel="stylesheet" type="text/css" href="./font-awesome/css/font-awesome.css">
+		
+		<script src="js/jquery.min.js"></script>
+		
+		<script type="text/javascript">
+			$(function() {
+				$('a[href*=#]:not([href=#])').click(function() {
+					if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+						var target = $(this.hash);
+						target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+						if (target.length) {
+							$('html,body').animate({
+								scrollTop: target.offset().top
+							}, 1000);
+							return false;
+						}
+					}
+				});
+			});
+		</script>
+	</head>
+	
+	<body>
+		<!-- SIDE-BAR -->
+		<div id="nav">
+		
+			<!-- LOGO -->
+			<div id="logo">
+				<div id="avatar"></div>
+				<div id="me">
+					<h1>Arne Wandt</h1>
+					<span>Wirtschaftsinformatiker</span>
+				</div>
+			</div>
+			
+			<!-- NAVIGATION -->
+			
+			<!-- FOOTER / SOCIAL ICONS -->
+			<div class="footer" id="socialIcons">
+				<a href="http://twitter.com/Niranda"><i class="footerButton button fa fa-lg fa-twitter"></i></a>
+				<a href="https://www.facebook.com/profile.php?id=100008230500562"><i class="footerButton button fa fa-lg fa-facebook"></i></a>
+				<a href="#"><i class="footerButton button fa fa-lg fa-google-plus"></i></a>
+				<a href="#"><i class="footerButton button fa fa-lg fa-youtube"></i></a>
+				<a href="http://github.com/Niranda"><i class="footerButton button fa fa-lg fa-github"></i></a>
+			</div>
+		</div>
+	</body>
+</html>
