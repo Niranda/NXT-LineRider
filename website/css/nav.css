@@ -1,5 +1,9 @@
 #nav {
 	background-color: #222;
+	background-image: url(../img/nav_bg.png);
+	background-position: right;
+	background-repeat: repeat-y;
+	
 	color: #666;
 	
 	width: 250px;
@@ -25,7 +29,9 @@
 	min-width: 50px;
 	min-height: 50px;
 	
+	border-radius: 2px;
 	float: right;
+	box-shadow: black 0px 0px 10px;
 }
 
 #me {
@@ -40,10 +46,12 @@
 	color: white;
 	margin: 0px;
 	padding: 0px;
+	text-shadow: white 0px 0px 5px;
 }
 
 #me span {
 	font-size: 15px;
+	text-shadow: black 0px 0px 5px;
 }
 
 #socialIcons {
