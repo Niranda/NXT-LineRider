@@ -63,15 +63,16 @@ a:hover {
 	text-decoration: none;
 	cursor: pointer;
 	
-	-moz-transition: 	color 0.35s ease-in-out;
-	-webkit-transition: color 0.35s ease-in-out;
-	-o-transition: 		color 0.35s ease-in-out;
-	-ms-transition: 	color 0.35s ease-in-out;
-	transition: 		color 0.35s ease-in-out;
+	-moz-transition: 	color 0.35s ease-in-out, text-shadow 0.35s ease-in-out;
+	-webkit-transition: color 0.35s ease-in-out, text-shadow 0.35s ease-in-out;
+	-o-transition: 		color 0.35s ease-in-out, text-shadow 0.35s ease-in-out;
+	-ms-transition: 	color 0.35s ease-in-out, text-shadow 0.35s ease-in-out;
+	transition: 		color 0.35s ease-in-out, text-shadow 0.35s ease-in-out;
 }
 
 .button:hover {
 	color: white;
+	text-shadow: white 0px 0px 5px;
 }
 
 .button:active {

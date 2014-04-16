@@ -17,9 +17,30 @@
 		<script src="js/jquery.min.js"></script>
 		
 		<script type="text/javascript">
+			/* START IF PAGE IS READY */
 			$( document ).ready(function() {
+				/* LOAD/CHANGE BACKGROUND */
 				changeBackground();
+			
+				/* SMOOTH SCROLLING */
+				$(function() {
+					$('a[href*=#]:not([href=#])').click(function() {
+						if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+							var target = $(this.hash);
+							target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+							if (target.length) {
+								$('html,body').animate({
+									scrollTop: target.offset().top
+								}, 1000);
+								return false;
+							}
+						}
+					});
+				});
 			});
+			
+			/* CONTENT FILLER */
+			
 			/* BACKGROUND CYCLING */
 			function changeBackground(last) {
 				var divid = '#bgHolder';		// the ID of the Div-Box
@@ -44,22 +65,6 @@
 				
 				changeBackground(i);
 			}
-			
-			/* SMOOTH SCROLLING */
-			$(function() {
-				$('a[href*=#]:not([href=#])').click(function() {
-					if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
-						var target = $(this.hash);
-						target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
-						if (target.length) {
-							$('html,body').animate({
-								scrollTop: target.offset().top
-							}, 1000);
-							return false;
-						}
-					}
-				});
-			});
 		</script>
 	</head>
 	
@@ -78,6 +83,11 @@
 				</div>
 				
 				<!-- NAVIGATION -->
+				<div class="navigation">
+					<a href="#red" onClick="loadContent('test.txt'); return false;">LineRider</a>
+					<a href="#blue" onClick="loadContent('test.txt'); return false;">Balancer</a>
+					<a href="#white" onClick="loadContent('test.txt'); return false;">Link 3</a>
+				</div>
 				
 			</div>
 			
@@ -94,9 +104,7 @@
 		<!-- CONTENT-WINDOW -->
 		<div id="bgHolder">
 		</div>
-		<div class="content">
-			Ich bin tatsächlich ein bisschen Inhalt!<br />
-			Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />Ich bin tatsächlich ein bisschen Inhalt!<br />
+		<div class="content" id="contentHolder">
 		</div>
 	</body>
 </html>
