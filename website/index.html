@@ -9,12 +9,15 @@
 		
 		<link rel="stylesheet" type="text/css" href="./css/reset.css" />
 		<link rel="stylesheet" type="text/css" href="./css/style.css" />
+		<link rel="stylesheet" type="text/css" href="./css/contentHandler.css" />
 		<link rel="stylesheet" type="text/css" href="./css/content.css" />
 		<link rel="stylesheet" type="text/css" href="./css/nav.css" />
 		
 		<link rel="stylesheet" type="text/css" href="./font-awesome/css/font-awesome.css">
 		
 		<script src="js/jquery.min.js"></script>
+		<script src="js/niradev_contenthandler.js"></script>
+		<script src="js/niradev_bgcycler.js"></script>
 		
 		<script type="text/javascript">
 			/* START IF PAGE IS READY */
@@ -29,113 +32,18 @@
 					cboxClose();
 				});
 				
-				/* LOAD/CHANGE BACKGROUND */
-				changeBackground();
+				/* CHANGE BACKGROUND */
+				var lastImg = changeBackground();
+				
+				window.setInterval(function(){
+					lastImg = changeBackground(lastImg);
+				}, 10000);
 			});
-			
-			/* CONTENT-BOX HANDLER */
-			var cboxIsClosed = true;
-			var cboxLoadedID = false;
-			var cboxWidth = $("#contentHolder").css("width");
-			var cboxLeft = $("#contentHolder").css("left");
-			
-			
-			function cboxToggle(ID) {
-				if (cboxIsClosed == true) {		// is closed, so: open cBox
-					$("#" + ID).addClass("navActive");
-				
-					cboxOpen(ID);
-					return false;				// do NOT follow the link...
-				}
-				else {							// cBox is open...
-					if (ID == cboxLoadedID || ID == "cboxClose") {
-						cboxClose();
-					}
-					else {
-						cboxChange(ID);
-						$("#" + ID).addClass("navActive");
-					}
-					
-					return false;				// do NOT follow the link...
-				}
-			}
-			
-			function cboxOpen(ID) {
-				cboxIsClosed = false;
-				cboxLoad(ID);
-				
-				$("#contentHolder").css("display", "block");
-				$("#content").css("display", "none");
-				
-				$("#contentHolder").animate({
-					width: 800
-				}, 1000, function() {
-					$("#content").fadeIn("slow");
-				});
-			}
-			
-			function cboxClose() {
-				cboxIsClosed = true;
-				cboxLoadedID = false;
-				
-				$(".navActive").removeClass("navActive");
-			
-				$("#content").fadeOut("slow", function() {
-					$("#contentHolder").animate({
-						width: 0
-					}, 1000, function() {
-						$("#contentHolder").css("display", "none");
-						$("#content").css("display", "none");
-					});
-				});
-			}
-			
-			function cboxLoad(ID) {
-				cboxLoadedID = ID;
-				var srcBoxID = "content_" + ID;
-				
-				$("#content").html("");
-				$("#content").html( $("#" + srcBoxID).html() );
-			}
-			
-			function cboxChange(ID) {
-				$(".navActive").removeClass("navActive");
-				
-				$("#content").fadeOut("slow", function() {
-					cboxLoad(ID);
-					$("#content").fadeIn("slow");
-				});
-			}
-			
-			/* BACKGROUND CYCLING */
-			function changeBackground(last) {
-				var divid = '#bgHolder';		// the ID of the Div-Box
-				var path = './img/onTour/';		// Path to the images
-				var type = '.jpg';				// file-type of the images
-				var timeout = 10;				// timeout in seconds for image-change
-				var start = 1;					// Start at Image 1
-				var end = 32;					// End at Image 32
-				
-				var i = last;
-				var opacity = $(divid).css('opacity');
-				
-				timeout = timeout * 1000;
-				
-				while (i == last) {				// to be sure that the next image is another one
-					i = Math.floor((Math.random() * end) + start);
-				}
-				
-				$(divid).fadeTo('slow', 0, function() {
-					$(divid).css('background-image', 'url('+ path + i + type +')');
-				}).fadeTo('slow', opacity).delay(timeout);
-				
-				changeBackground(i);
-			}
 		</script>
 		
 		<noscript>
 			<div id="noScript">
-				Diese Webseite benötigt JavaScript, um richtig zu funktionieren.
+				Diese Webseite benötigt JavaScript, um richtig/komplett zu funktionieren.
 			</div>
 		</noscript>
 	</head>
@@ -154,11 +62,15 @@
 					</div>
 				</div>
 				
+				<!---------------->
 				<!-- NAVIGATION -->
+				<!---------------->
 				<div class="navigation">
-					<a class="navLink" id="test" href="#">LineRider</a>
-					<a class="navLink" id="test2" href="#">Balancer</a>
-					<a class="navLink" id="test3" href="#">Link 3</a>
+					<a class="navLink" id="cProject" 	href="#">Das Projekt</a>
+					<a class="navLink" id="cLineRider" 	href="#">LineRider</a>
+					<a class="navLink" id="cBalancer" 	href="#">Balancer</a>
+					<a class="navLink" id="cGallery" 	href="#">Galerie</a>
+					<a class="navLink" id="cInfo" 		href="#">Über</a>
 				</div>
 				
 			</div>
@@ -185,19 +97,35 @@
 			</div>
 		</div>
 		
+		
+					<a class="navLink" id="cProject" 	href="#">Das Projekt</a>
+					<a class="navLink" id="cLineRider" 	href="#">LineRider</a>
+					<a class="navLink" id="cBalancer" 	href="#">Balancer</a>
+					<a class="navLink" id="cGallery" 	href="#">Galerie</a>
+					<a class="navLink" id="cInfo" 		href="#">Über</a>
 		<!----------------------------->
 		<!-- CONTENT-INFORMATION-AREA-->
 		<!----------------------------->
-		<div id="contentHtmlBoxes">
+		<div id="contentHtmlBoxHolder">
 		
-			<!-- -->
-			<div id="content_test">
-				<p>Here is some funny stuff :D</p>
+			<!-- Das Projekt -->
+			<div class="contentHtmlBoxes" id="content_cProject">
 			</div>
 			
-			<!-- -->
-			<div id="content_test2">
-				<p>And here you got some more crappy stuff - have fun ;)</p>
+			<!-- LineRider -->
+			<div class="contentHtmlBoxes" id="content_cLineRider">
+			</div>
+		
+			<!-- Balancer -->
+			<div class="contentHtmlBoxes" id="content_cBalancer">
+			</div>
+		
+			<!-- Galerie -->
+			<div class="contentHtmlBoxes" id="content_cGallery">
+			</div>
+		
+			<!-- Über -->
+			<div class="contentHtmlBoxes" id="content_cInfo">
 			</div>
 			
 		</div>
