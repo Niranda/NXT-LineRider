@@ -1,72 +1,27 @@
-#bgHolder {
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-attachment: fixed;
-	background-size: cover;
-	width: 100%;
-	height: 100%;
-	background-image: url(../img/onTour/9.jpg);		/* fallback-image, if JS is deactivated */
-	opacity: 1;
-}
-
-.content {
-	position: absolute;
-	z-index: 50;
-	float: left;
-	
-	
-	box-shadow: 0px 0px 20px black;
-	overflow: auto;
-}
-
-#contentHolder {
-	display: block;
-	height: 96%;
-	width: 0px;
-	background-color: rgba(255, 255, 255, 0.75);	/* rgba, because we want the children left untouched */
-	
-	top: 2%;
-	left: 270px;
-}
-
-#content {
+#contentHtmlBoxHolder {
 	display: none;
 }
 
-#contentHolderCloser {
-	display: block;
-	position: absolute;
-	right:0px;
-	top:0px;
-	height: 25px;
-	width: 30px;
-	margin: 0px;
-	padding-top: 5px;
-	text-align: center;
-	line-height: 20px;
-	font-size:20px;
-	z-index: 150;
-	box-shadow: black 0px 0px 5px;
-	border-bottom-left-radius: 5px;
-	background-color: rgba(255, 0, 0, 0.25);
-	cursor: pointer;
+.contentHtmlBoxes {
 	
-	-moz-transition: 	background-color 0.35s ease-in-out;
-	-webkit-transition: background-color 0.35s ease-in-out;
-	-o-transition: 		background-color 0.35s ease-in-out;
-	-ms-transition: 	background-color 0.35s ease-in-out;
-	transition: 		background-color 0.35s ease-in-out;
 }
 
-#contentHolderCloser:hover {
-	background-color: rgba(255, 0, 0, 0.5);
+#content_cProject {
+
 }
 
-#contentHolderCloser:active {
-	background-color: rgba(255, 0, 0, 1);
-	color: white;
+#content_cLineRider {
+
 }
 
-#contentHtmlBoxes {
-	display: none;
+#content_cBalancer {
+
+}
+
+#content_cGallery {
+
+}
+
+#content_cInfo {
+
 }
