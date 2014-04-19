@@ -86,3 +86,14 @@ a:hover {
 	bottom: 0px;
 	height: 45px;
 }
+
+#noScript {
+	background-color: red;
+	top: 0px;
+	width: 100%;
+	position: absolute;
+	z-index: 1000;
+	border-bottom: 1px solid black;
+	text-align: center;
+	color: white;
+}

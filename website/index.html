@@ -19,27 +19,93 @@
 		<script type="text/javascript">
 			/* START IF PAGE IS READY */
 			$( document ).ready(function() {
+				/* CLICK-EVENT FOR NAVIGATION */
+				$(".navLink").click(function() {
+					cboxToggle(this.id);
+				});
+				
+				/* CLOSE-BUTTON-EVENT */
+				$("#contentHolderCloser").click(function() {
+					cboxClose();
+				});
+				
 				/* LOAD/CHANGE BACKGROUND */
 				changeBackground();
-			
-				/* SMOOTH SCROLLING */
-				$(function() {
-					$('a[href*=#]:not([href=#])').click(function() {
-						if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
-							var target = $(this.hash);
-							target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
-							if (target.length) {
-								$('html,body').animate({
-									scrollTop: target.offset().top
-								}, 1000);
-								return false;
-							}
-						}
-					});
-				});
 			});
 			
-			/* CONTENT FILLER */
+			/* CONTENT-BOX HANDLER */
+			var cboxIsClosed = true;
+			var cboxLoadedID = false;
+			var cboxWidth = $("#contentHolder").css("width");
+			var cboxLeft = $("#contentHolder").css("left");
+			
+			
+			function cboxToggle(ID) {
+				if (cboxIsClosed == true) {		// is closed, so: open cBox
+					$("#" + ID).addClass("navActive");
+				
+					cboxOpen(ID);
+					return false;				// do NOT follow the link...
+				}
+				else {							// cBox is open...
+					if (ID == cboxLoadedID || ID == "cboxClose") {
+						cboxClose();
+					}
+					else {
+						cboxChange(ID);
+						$("#" + ID).addClass("navActive");
+					}
+					
+					return false;				// do NOT follow the link...
+				}
+			}
+			
+			function cboxOpen(ID) {
+				cboxIsClosed = false;
+				cboxLoad(ID);
+				
+				$("#contentHolder").css("display", "block");
+				$("#content").css("display", "none");
+				
+				$("#contentHolder").animate({
+					width: 800
+				}, 1000, function() {
+					$("#content").fadeIn("slow");
+				});
+			}
+			
+			function cboxClose() {
+				cboxIsClosed = true;
+				cboxLoadedID = false;
+				
+				$(".navActive").removeClass("navActive");
+			
+				$("#content").fadeOut("slow", function() {
+					$("#contentHolder").animate({
+						width: 0
+					}, 1000, function() {
+						$("#contentHolder").css("display", "none");
+						$("#content").css("display", "none");
+					});
+				});
+			}
+			
+			function cboxLoad(ID) {
+				cboxLoadedID = ID;
+				var srcBoxID = "content" + ID;
+				
+				$("#content").html("");
+				$("#content").html( $("#" + srcBoxID).html() );
+			}
+			
+			function cboxChange(ID) {
+				$(".navActive").removeClass("navActive");
+				
+				$("#content").fadeOut("slow", function() {
+					cboxLoad(ID);
+					$("#content").fadeIn("slow");
+				});
+			}
 			
 			/* BACKGROUND CYCLING */
 			function changeBackground(last) {
@@ -66,6 +132,12 @@
 				changeBackground(i);
 			}
 		</script>
+		
+		<noscript>
+			<div id="noScript">
+				Diese Webseite benötigt JavaScript, um richtig zu funktionieren.
+			</div>
+		</noscript>
 	</head>
 	
 	<body>
@@ -84,9 +156,9 @@
 				
 				<!-- NAVIGATION -->
 				<div class="navigation">
-					<a href="#red" onClick="loadContent('test.txt'); return false;">LineRider</a>
-					<a href="#blue" onClick="loadContent('test.txt'); return false;">Balancer</a>
-					<a href="#white" onClick="loadContent('test.txt'); return false;">Link 3</a>
+					<a class="navLink" id="test" href="#">LineRider</a>
+					<a class="navLink" id="test2" href="#">Balancer</a>
+					<a class="navLink" id="test3" href="#">Link 3</a>
 				</div>
 				
 			</div>
@@ -102,9 +174,28 @@
 		</div>
 		
 		<!-- CONTENT-WINDOW -->
-		<div id="bgHolder">
+		<div id="bgHolder">		<!-- Box for background-images -->
 		</div>
-		<div class="content" id="contentHolder">
+		<div class="content" id="contentHolder">	<!-- Box for content -->
+			<div id="contentHolderCloser">
+				<i class="fa fa-arrow-left">
+			</i></div>
+		
+			<div id="content">
+			</div>
 		</div>
+		
+		<!----------------------------->
+		<!-- CONTENT-INFORMATION-AREA-->
+		<!----------------------------->
+			<!-- -->
+			<div id="contenttest">
+				<p>Here is some funny stuff :D</p>
+			</div>
+			
+			<!-- -->
+			<div id="contenttest2">
+				<p>And here you got some more crappy stuff - have fun ;)</p>
+			</div>
 	</body>
 </html>

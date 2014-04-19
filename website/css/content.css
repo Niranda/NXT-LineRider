@@ -14,13 +14,55 @@
 	z-index: 50;
 	float: left;
 	
-	top: 2%;
-	bottom:50px;
-	left: 270px;
 	
-	background-color: rgba(255, 255, 255, 0.75);	/* rgba, because we want the children left untouched */
 	box-shadow: 0px 0px 20px black;
 	overflow: auto;
+}
+
+#contentHolder {
+	display: block;
 	height: 96%;
-	width: 800px;
+	width: 0px;
+	background-color: rgba(255, 255, 255, 0.75);	/* rgba, because we want the children left untouched */
+	
+	top: 2%;
+	left: 270px;
+}
+
+#content {
+	display: none;
+}
+
+#contentHolderCloser {
+	display: block;
+	position: absolute;
+	right:0px;
+	top:0px;
+	height: 25px;
+	width: 30px;
+	margin: 0px;
+	padding-top: 5px;
+	text-align: center;
+	line-height: 20px;
+	font-size:20px;
+	z-index: 150;
+	box-shadow: black 0px 0px 5px;
+	border-bottom-left-radius: 5px;
+	background-color: rgba(255, 0, 0, 0.25);
+	cursor: pointer;
+	
+	-moz-transition: 	background-color 0.35s ease-in-out;
+	-webkit-transition: background-color 0.35s ease-in-out;
+	-o-transition: 		background-color 0.35s ease-in-out;
+	-ms-transition: 	background-color 0.35s ease-in-out;
+	transition: 		background-color 0.35s ease-in-out;
+}
+
+#contentHolderCloser:hover {
+	background-color: rgba(255, 0, 0, 0.5);
+}
+
+#contentHolderCloser:active {
+	background-color: rgba(255, 0, 0, 1);
+	color: white;
 }
