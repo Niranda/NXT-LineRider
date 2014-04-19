@@ -66,3 +66,7 @@
 	background-color: rgba(255, 0, 0, 1);
 	color: white;
 }
+
+#contentHtmlBoxes {
+	display: none;
+}

@@ -92,7 +92,7 @@
 			
 			function cboxLoad(ID) {
 				cboxLoadedID = ID;
-				var srcBoxID = "content" + ID;
+				var srcBoxID = "content_" + ID;
 				
 				$("#content").html("");
 				$("#content").html( $("#" + srcBoxID).html() );
@@ -188,14 +188,18 @@
 		<!----------------------------->
 		<!-- CONTENT-INFORMATION-AREA-->
 		<!----------------------------->
+		<div id="contentHtmlBoxes">
+		
 			<!-- -->
-			<div id="contenttest">
+			<div id="content_test">
 				<p>Here is some funny stuff :D</p>
 			</div>
 			
 			<!-- -->
-			<div id="contenttest2">
+			<div id="content_test2">
 				<p>And here you got some more crappy stuff - have fun ;)</p>
 			</div>
+			
+		</div>
 	</body>
 </html>
