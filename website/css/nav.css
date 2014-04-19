@@ -63,19 +63,25 @@
 	text-shadow: black 0px 0px 5px;
 }
 
+.navigation  i  {
+	margin-top: 10px;
+	margin-left: 20px;
+}
+
 .navigation  a {
 	background-color: rgba(25, 25, 25, 1);	/* rgba, because we want the children left untouched */
-	margin-top: 10px;
+	margin-top: 5px;
 	display: block;
 	width: 100%;
 	float: right;
 	text-align: right;
+	font-size: 20px;
 	padding-right: 30px;
 	color: grey;
 	background-image: url(../img/nav_bg.png);
 	background-position: right;
 	background-repeat: repeat-y;
-	
+	line-height:40px;
 	-moz-transition: 	background-color 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
 	-webkit-transition: background-color 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
 	-o-transition: 		background-color 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
