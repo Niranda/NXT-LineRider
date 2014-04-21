@@ -79,7 +79,9 @@ public class movingSensor {
 	 * main method
 	 */
 	public static void main(String[] args)throws Exception  {
-//		searchLine();
+		LCD.drawString("SENSOR TESTMODE", 1, 1);
+		LCD.drawString("Hit ENTER + ESC to stop", 1, 2);
+		searchLine();
 	}
 	
 	
@@ -92,26 +94,25 @@ public class movingSensor {
 	 * @throws InterruptedException 
 	 */
 	public static void searchLine() throws InterruptedException {
-		Motor.B.resetTachoCount();
-		setSpeed(sensorSpeed);
+		Motor.B.resetTachoCount();																	// 0 degree at start :-)
 		
+		setSpeed(sensorSpeed);																		// set some values..
 		setDefaultColor();
 		setDefaultMovement();
 		
-		while(go) {
+		while(go) {																					// start moving!
 			changeDirection = false;
 			
-			if (direction == 1) {
-				Motor.B.backward();
+			if (direction == 1) {																	// turn right
+				turnRight();
 			}
-			else if (direction == -1) {
-				Motor.B.forward();
+			else if (direction == -1) {																// turn left
+				turnLeft();
 			}
 
 			Thread.sleep(hardwareLagg);																// compensate hardware-lagg
 			
 			while (checkMovingRange() && !changeDirection && go) {									// sensor is in range...
-				
 				if (checkColor(colorWhite) && foundBlack) {											// Detected white surface after a black surface
 					changeDirection = true;
 				}
@@ -121,15 +122,9 @@ public class movingSensor {
 				else {																				// Detected sth. other...
 					/* ignore */
 				}
-//				if (Button.ESCAPE.isDown()) { break; }
-//				LCD.drawInt(Motor.B.getTachoCount(), 5, 5);
 			}
 			
 			reverseDirection();
-//			LCD.drawInt(linePosition, 1, 1);
-//			LCD.drawInt(lastPosition, 2, 2);
-//			LCD.drawInt(penultimatePosition, 3, 3);
-//			if (Button.ESCAPE.isDown()) { break; }
 		}
 	}
 	
@@ -137,8 +132,9 @@ public class movingSensor {
 	/**
 	 * This will reverse the moving direction of the sensor.
 	 */
-	private static void reverseDirection() {
+	public static void reverseDirection() {
 		Motor.B.stop();																				// stop the motor
+		Button.ENTER.waitForPressAndRelease();
 		direction = direction * -1;																	// reverse the moving-direction
 		
 		if (foundBlack) {																			// If black surface was found...
@@ -156,6 +152,22 @@ public class movingSensor {
 		else {																						// No black surface was found...
 			reverseCounter++;																		// ...count that fail!
 		}
+	}
+	
+	
+	/**
+	 * Let the sensor do a left turn
+	 */
+	public static void turnLeft() {
+		Motor.B.forward();
+	}
+	
+	
+	/**
+	 * Let the sensor do a right turn
+	 */
+	public static void turnRight() {
+		Motor.B.backward();
 	}
 	
 	
