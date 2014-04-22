@@ -24,7 +24,7 @@ import lejos.robotics.navigation.*;
  *  (180 degree swiveling)
  * *****************************/
 
-public class movingSensor {
+public class movingSensor extends Thread {
 	/* *****************************
 	 * VARIABLE DECLARATION
 	 * *****************************/
@@ -85,6 +85,16 @@ public class movingSensor {
 	}
 	
 	
+	public void run() {
+		go = true;
+		searchLine();
+	}
+	
+	public void stop() {
+		go = false;
+	}
+	
+	
 	/**
 	 * Sensor will find and follow the black line.
 	 * The variable 'position' will be set to the current position of the sensor.
@@ -93,7 +103,7 @@ public class movingSensor {
 	 * 
 	 * @throws InterruptedException 
 	 */
-	public static void searchLine() throws InterruptedException {
+	public static void searchLine() {
 		Motor.B.resetTachoCount();																	// 0 degree at start :-)
 		
 		setSpeed(sensorSpeed);																		// set some values..
@@ -110,7 +120,11 @@ public class movingSensor {
 				turnLeft();
 			}
 
-			Thread.sleep(hardwareLagg);																// compensate hardware-lagg
+			try {																					// workaround for multithreading
+				Thread.sleep(hardwareLagg);															// compensate hardware-lagg
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+			}																
 			
 			while (checkMovingRange() && !changeDirection && go) {									// sensor is in range...
 				if (checkColor(colorWhite) && foundBlack) {											// Detected white surface after a black surface
@@ -133,8 +147,6 @@ public class movingSensor {
 	 * This will reverse the moving direction of the sensor.
 	 */
 	public static void reverseDirection() {
-		Motor.B.stop();																				// stop the motor
-		Button.ENTER.waitForPressAndRelease();
 		direction = direction * -1;																	// reverse the moving-direction
 		
 		if (foundBlack) {																			// If black surface was found...
