@@ -30,16 +30,32 @@ public class brain {
 	/*
 	 * OBJECTS
 	 */
-	movingSensor sensor = new movingSensor();
-	monitor monitor = new monitor();
-	engine engine = new engine();
+	private static DataExchange de;
+	private static movingSensor sensor;
+	private static engine engine;
+//	private monitor monitor = new monitor();
 	
-
+	
+	
 	/* *****************************
 	 * METHODS
 	 * *****************************/
 	public static void main(String[] args)throws Exception {
+		de = new DataExchange();
+		sensor = new movingSensor(de);
+		engine = new engine(de);
 		
+		sensor.start();
+		engine.start();
+		
+		while(!Button.ESCAPE.isDown()) {
+			// let it sno... work, yeah, let it work!
+		}
+		
+		LCD.drawString("FINISHED", 0, 7);
+		LCD.refresh();
+		
+		System.exit(0);
 	}
 
 }

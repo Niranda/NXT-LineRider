@@ -48,7 +48,7 @@ public class movingSensor extends Thread {
 	private static int 		reverseCounter = 0;													// reverse-counter, if there wasn't a black-found before
 	
 	private static int hardwareLagg = 100;														// Thread sleeping for ...ms to compensate the hardware-lagg
-	private static int sensorSpeed = 10;														// speed of the sensor, calculates braking-distance
+	private static int sensorSpeed = 50;														// speed of the sensor, calculates braking-distance
 	private static int brakingCompensation;														// the faster the sensor, the higher the braking-distance - a balancer
 	
 	
@@ -237,7 +237,8 @@ public class movingSensor extends Thread {
 	 * 
 	 * @param paraSpeed
 	 */
-	private static void setSpeed(int paraSpeed) {
+	public static void setSpeed(int paraSpeed) {
+		sensorSpeed = paraSpeed;
 		Motor.B.setSpeed(paraSpeed);
 		brakingCompensation = Math.round((paraSpeed / 200) * 10);									// calculate some extra braking-distance
 	}
@@ -300,6 +301,16 @@ public class movingSensor extends Thread {
 	 */
 	private static int getRealTachoCount() {
 		return Motor.B.getTachoCount() * -1;
+	}
+	
+	
+	public static int getLine() {
+		return linePosition;
+	}
+	
+	
+	public static boolean isBlack() {
+		return foundBlack;
 	}
 
 }

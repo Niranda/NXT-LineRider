@@ -21,21 +21,34 @@ import lejos.robotics.navigation.*;
 
 /*
  * Description
- * 	Bereitstellung grundlegender Funktionen der Antriebsmotoren
+ * 	Basic motor/engine functions
  */
 
-public class engine {
+public class engine extends Thread {
 	private static int speed;
-	private static DifferentialPilot robot = new DifferentialPilot(5.5, 10.5, Motor.A, Motor.C); 	// Pilot-Objekt Erzeugung (Raddurchmesser cm, Abstand cm, Motor1, Motor2)
+	private static DifferentialPilot robot = new DifferentialPilot(5.5, 10, Motor.A, Motor.C); 	// Pilot-Objekt Erzeugung (Raddurchmesser cm, Abstand cm, Motor1, Motor2)
 	
 	
 	public static void main(String[] args)throws Exception {
-		Button.ENTER.waitForPressAndRelease();
 		
-		while(!Button.ESCAPE.isDown()) {
-//			robot.rotate(180);
-			turnLeft(90);
-			Button.ENTER.waitForPressAndRelease();
+	}
+	
+	
+	public void run() {
+		forward();
+	}
+	
+	
+	public void stop() {
+		robot.stop();
+	}
+	
+	public void stop(boolean hardStop) {
+		if (hardStop) {
+			robot.quickStop();
+		}
+		else {
+			stop();
 		}
 	}
 	
@@ -47,11 +60,21 @@ public class engine {
 		robot.forward();
 	}
 	
+	public static void forward(int travelSpeed) {
+		setSpeed(travelSpeed);
+		robot.forward();
+	}
+	
 	
 	/**
 	 * Move backward
 	 */
 	public static void backward() {
+		robot.backward();
+	}
+	
+	public static void backward(int travelSpeed) {
+		setSpeed(travelSpeed);
 		robot.backward();
 	}
 	
@@ -104,7 +127,32 @@ public class engine {
 	 */
 	public static void rotate(int degree) {
 		robot.rotate(degree);
-		//robot.steer(123);			// TODO interesting..!
+	}
+	
+	
+	/**
+	 * Starts the robot moving forward along a curved path. This method is similar to the arcForward(double radius) method
+	 * except it uses the turnRate parameter do determine the curvature of the path and therefore has the ability to drive
+	 * straight. This makes it useful for line following applications. 
+	 * The turnRate specifies the sharpness of the turn. Use values between -200 and +200.
+	 * A positive value means that center of the turn is on the left. If the robot is traveling toward the top of the page
+	 * the arc looks like this: ). 
+	 * A negative value means that center of the turn is on the right so the arc looks this: (.
+	 * . In this class, this parameter determines the ratio of inner wheel speed to outer wheel speed as a percent.
+	 * Formula: ratio = 100 - abs(steerPercent).
+	 * When the ratio is negative, the outer and inner wheels rotate in opposite directions. Examples of how the formula
+	 * works: 
+	 * 
+	 * steerPercent(0)	 -> inner and outer wheels turn at the same speed, travel straight 
+	 * steerPercent(25)  -> the inner wheel turns at 75% of the speed of the outer wheel, turn left 
+	 * steerPercent(100) -> the inner wheel stops and the outer wheel is at 100 percent, turn left 
+	 * steerPercent(200) -> the inner wheel turns at the same speed as the outer wheel - a zero radius turn. 
+	 * Note: If you have specified a drift correction in the constructor it will not be applied in this method.
+	 * 
+	 * @param steerPercent If positive, the left side of the robot is on the inside of the turn. If negative, the left side is on the outside.
+	 */
+	public static void steer(double steerPercent) {
+		robot.steer(steerPercent);
 	}
 	
 	
@@ -115,6 +163,11 @@ public class engine {
 	public static void setSpeed(int paraSpeed) {
 		robot.setTravelSpeed(paraSpeed);
 		speed = paraSpeed;
+	}
+	
+	
+	public static boolean isMoving() {
+		return robot.isMoving();
 	}
 	
 }
