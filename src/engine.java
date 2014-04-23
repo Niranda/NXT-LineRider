@@ -25,6 +25,8 @@ import lejos.robotics.navigation.*;
  */
 
 public class engine extends Thread {
+	static dataExchange de;
+	
 	private static int speed;
 	private static DifferentialPilot robot = new DifferentialPilot(5.5, 10, Motor.A, Motor.C); 	// Pilot-Objekt Erzeugung (Raddurchmesser cm, Abstand cm, Motor1, Motor2)
 	
@@ -34,8 +36,26 @@ public class engine extends Thread {
 	}
 	
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param paraDe we need an data exchanger!
+	 */
+	public engine (dataExchange dataExchange) {
+		de = dataExchange;
+	}
+	
+	
 	public void run() {
 		forward();
+		
+		while(isMoving()) {
+			steer(de.getLinePosition());
+			
+			if (Button.ENTER.isDown()) {
+				break;
+			}
+		}
 	}
 	
 	
@@ -60,7 +80,7 @@ public class engine extends Thread {
 		robot.forward();
 	}
 	
-	public static void forward(int travelSpeed) {
+	public void forward(int travelSpeed) {
 		setSpeed(travelSpeed);
 		robot.forward();
 	}
@@ -73,7 +93,7 @@ public class engine extends Thread {
 		robot.backward();
 	}
 	
-	public static void backward(int travelSpeed) {
+	public void backward(int travelSpeed) {
 		setSpeed(travelSpeed);
 		robot.backward();
 	}
@@ -157,12 +177,12 @@ public class engine extends Thread {
 	
 	
 	/**
-	 * Let it now how fast it should travel
+	 * Let it know how fast it should travel
 	 * @param paraSpeed 10 is very slow, 300+ goes like hell!
 	 */
 	public static void setSpeed(int paraSpeed) {
 		robot.setTravelSpeed(paraSpeed);
-		speed = paraSpeed;
+		de.setEngineSpeed(paraSpeed);
 	}
 	
 	

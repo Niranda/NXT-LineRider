@@ -16,6 +16,7 @@
  */
 
 import lejos.nxt.*; 
+import lejos.nxt.rcxcomm.PacketHandler;
 import lejos.robotics.navigation.*;
 
 /* *****************************
@@ -28,6 +29,8 @@ public class movingSensor extends Thread {
 	/* *****************************
 	 * VARIABLE DECLARATION
 	 * *****************************/
+	static dataExchange de;
+	
 	private static int colorWhite;																// Wert auf weißen Oberflächen
 	private static int colorBlack;																// Wert auf schwarzen Oberflächen
 	private static int colorTolerance;															// Toleranz in Einheiten
@@ -61,8 +64,8 @@ public class movingSensor extends Thread {
 	/*
 	 * DEFAULTS
 	 */
-	private static int defaultColorWhite = 400;
-	private static int defaultColorBlack = 320;
+	private static int defaultColorWhite = 550;
+	private static int defaultColorBlack = 400;
 	private static int defaultColorTolerance = 25;
 	
 	private static int defaultMaxLeft = -60;													// 1 sensor-degree == 1,5 degree
@@ -82,6 +85,16 @@ public class movingSensor extends Thread {
 		LCD.drawString("SENSOR TESTMODE", 1, 1);
 		LCD.drawString("Hit ENTER + ESC to stop", 1, 2);
 		searchLine();
+	}
+	
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param paraDe we need an data exchanger!
+	 */
+	public movingSensor (dataExchange dataExchange) {
+		de = dataExchange;
 	}
 	
 	
@@ -127,10 +140,10 @@ public class movingSensor extends Thread {
 			}																
 			
 			while (checkMovingRange() && !changeDirection && go) {									// sensor is in range...
-				if (checkColor(colorWhite) && foundBlack) {											// Detected white surface after a black surface
+				if (checkForWhite() && foundBlack) {												// Detected white surface after a black surface
 					changeDirection = true;
 				}
-				else if (checkColor(colorBlack)) {													// Detected black surface
+				else if (checkForBlack()) {															// Detected black surface
 					foundBlack = true;
 				}
 				else {																				// Detected sth. other...
@@ -158,7 +171,7 @@ public class movingSensor extends Thread {
 				penultimatePosition = lastPosition;													// ...last got memorized
 				lastPosition = getRealTachoCount();													// ...yeah, this position is now the last one
 				
-				calcLinePosition();																	// ...go, do it!
+				setLinePosition();																	// ...go, do it!
 			}
 		}
 		else {																						// No black surface was found...
@@ -189,12 +202,33 @@ public class movingSensor extends Thread {
 	 * @param paraColor color which should be checked
 	 */
 	private static boolean checkColor(int paraColor) {
+		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
 		if (ls.readNormalizedValue() >= (paraColor - colorTolerance) &&								// yeah, it's the color!
 			ls.readNormalizedValue() <= (paraColor + colorTolerance))
 		{
 			return true;
 		}
 		else {																						// nope..
+			return false;
+		}
+	}
+	
+	private static boolean checkForWhite() {
+		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
+		if (ls.readNormalizedValue() >= colorWhite) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	private static boolean checkForBlack() {
+		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
+		if (ls.readNormalizedValue() <= colorBlack) {
+			return true;
+		}
+		else {
 			return false;
 		}
 	}
@@ -213,16 +247,11 @@ public class movingSensor extends Thread {
 			return false;
 		}
 	}
+
 	
-	
-	/**
-	 * returns the position of the black line (middle between two sensorpositions)
-	 * 
-	 * @param paraOne one site of the position
-	 * @param paraTwo other site of the position
-	 */
-	private static void calcLinePosition() {
+	private static void setLinePosition() {
 		linePosition = (int) Math.round(((penultimatePosition + lastPosition) / 2) * 1.5);			// average * sensorDegree-to-normalDegree
+		de.setLinePosition(linePosition);	
 	}
 	
 	
