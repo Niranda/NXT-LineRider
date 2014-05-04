@@ -16,8 +16,6 @@
  */
 
 import lejos.nxt.*; 
-import lejos.nxt.rcxcomm.PacketHandler;
-import lejos.robotics.navigation.*;
 
 /* *****************************
  * Description
@@ -26,57 +24,28 @@ import lejos.robotics.navigation.*;
  * *****************************/
 
 public class movingSensor extends Thread {
-	/* *****************************
-	 * VARIABLE DECLARATION
-	 * *****************************/
-	static dataExchange de;
 	
-	private static int colorWhite;																// Wert auf weißen Oberflächen
-	private static int colorBlack;																// Wert auf schwarzen Oberflächen
-	private static int colorTolerance;															// Toleranz in Einheiten
-	
-	private static int maxLeft;																	// maximale Sensorstellung: links
-	private static int maxRight;																// maximale Sensorstellung: rechts
-	
-	private static int linePosition = 0;														// line's position in normal degree
-	private static int lastPosition = 0;														// last seen position
-	private static int penultimatePosition = 0;													// penultimated position (last memorized)
-	
-	private static boolean 	go = true;															// TRUE = arbeitend, FALSE = nicht arbeitend
-	private static int 		direction = 1;														// Sensor Bewegungsrichtung (1 = right, -1 = left)
-	private static int 		lastDirection;														// Direction before change
-	private static boolean 	changeDirection = false;											// true, if direction-change is incoming (while-break)
-	private static boolean 	blackBeforeReverse = false;											// true, if before a reverse was black found, false if not
-	private static boolean 	foundBlack = false;													// set true, if black was found (just reverse set it false)
-	private static int 		reverseCounter = 0;													// reverse-counter, if there wasn't a black-found before
-	
-	private static int hardwareLagg = 100;														// Thread sleeping for ...ms to compensate the hardware-lagg
-	private static int sensorSpeed = 50;														// speed of the sensor, calculates braking-distance
-	private static int brakingCompensation;														// the faster the sensor, the higher the braking-distance - a balancer
-	
+/* *****************************
+ * VARIABLE DECLARATION
+ * *****************************/
 	
 	/*
 	 * OBJECTS
 	 */
-	private static LightSensor ls = new LightSensor(SensorPort.S1);								// LightSensor initiieren
+	private static movingSensor ms = new movingSensor(new dataExchange());
+	private sfx sfx = new sfx();
+	
+	private dataExchange de;
+	private LightSensor ls = new LightSensor(SensorPort.S1);
 	
 	
-	/*
-	 * DEFAULTS
-	 */
-	private static int defaultColorWhite = 550;
-	private static int defaultColorBlack = 400;
-	private static int defaultColorTolerance = 25;
-	
-	private static int defaultMaxLeft = -60;													// 1 sensor-degree == 1,5 degree
-	private static int defaultMaxRight = 60;
-	
-
 	
 	
-	/* *****************************
-	 * METHODS
-	 * *****************************/
+	
+	
+/* *****************************
+ * BASIC METHODS
+ * *****************************/
 	
 	/**
 	 * main method
@@ -84,12 +53,13 @@ public class movingSensor extends Thread {
 	public static void main(String[] args)throws Exception  {
 		LCD.drawString("SENSOR TESTMODE", 1, 1);
 		LCD.drawString("Hit ENTER + ESC to stop", 1, 2);
-		searchLine();
+		// TODO: do random stuff
+		ms.initialize();
+		
 	}
 	
-	
 	/**
-	 * Constructor
+	 * Constructor, catch the data exchanger
 	 * 
 	 * @param paraDe we need an data exchanger!
 	 */
@@ -97,249 +67,532 @@ public class movingSensor extends Thread {
 		de = dataExchange;
 	}
 	
-	
+	/**
+	 * Start-method of multithreading
+	 */
 	public void run() {
-		go = true;
-		searchLine();
+		// TODO: initialize and maybe some changes to start
 	}
 	
+	/**
+	 * Stop that thread (may not the correct way)
+	 */
 	public void stop() {
-		go = false;
+		// TODO: check, if "go" has not changed
 	}
 	
 	
+	
+	
+	
+/* *****************************
+ * OPERATION METHODS
+ * *****************************/
 	/**
-	 * Sensor will find and follow the black line.
-	 * The variable 'position' will be set to the current position of the sensor.
-	 * 
-	 * At start the sensor has to be in center-position!
-	 * 
-	 * @throws InterruptedException 
+	 * Initialize the sensor (before start!)
+	 * The sensor has to be at middle position (0 degrees)
+	 * and on a black line!
 	 */
-	public static void searchLine() {
-		Motor.B.resetTachoCount();																	// 0 degree at start :-)
+	public void initialize() {
+		engineResetTachoCount();												// middle ^= 0 degrees
+		setEngineSpeed(20);
 		
-		setSpeed(sensorSpeed);																		// set some values..
-		setDefaultColor();
-		setDefaultMovement();
+		de.setInitSensorColorBlack(getSensorValue());							// read current black value
+		sfx.beep();
 		
-		while(go) {																					// start moving!
-			changeDirection = false;
-			
-			if (direction == 1) {																	// turn right
-				turnRight();
+		engineTurnLeft();														// turn to max left
+		while(engineIsInRange()) {}
+		engineStop();
+	
+		if (getSensorValue() > de.getInitSensorColorBlack() + de.getSensorColorTolerance()) {
+			de.setInitSensorColorWhite(getSensorValue());						// read white
+		}
+	
+		sfx.beep(2);
+		engineTurnRight();														// turn to max right
+		while(engineIsInRange()) {}
+		engineStop();
+		
+		sfx.beep(2);
+		if (getSensorValue() > de.getInitSensorColorBlack() + de.getSensorColorTolerance()) {
+			de.setInitSensorColorWhite(getSensorValue());						// read white
+		}
+		engineTurnTo(0);														// turn back to middle
+		
+		sfx.beep();
+	}
+	
+	
+	public void followLine() {
+		while (de.getSensorActive()) {											// if sensor active -> LF line
+			switch (de.getSensorState()) {										// check next direction
+				case -1:
+					engineTurnLeft();
+					break;
+					
+				case 1:
+					engineTurnRight();
+					break;
+					
+				default:
+					break;
 			}
-			else if (direction == -1) {																// turn left
-				turnLeft();
-			}
-
-			try {																					// workaround for multithreading
-				Thread.sleep(hardwareLagg);															// compensate hardware-lagg
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-			}																
 			
-			while (checkMovingRange() && !changeDirection && go) {									// sensor is in range...
-				if (checkForWhite() && foundBlack) {												// Detected white surface after a black surface
-					changeDirection = true;
-				}
-				else if (checkForBlack()) {															// Detected black surface
-					foundBlack = true;
-				}
-				else {																				// Detected sth. other...
-					/* ignore */
+			while (engineIsMoving()) {											// as long as sensor is moving...
+				if (sensorCheckForWhite()) {
+// TODO: überdenken, was ist wenn nur weiß vorhanden ist?? D:					
 				}
 			}
+		}
+		
+		engineTurnTo(0);														// At any end: turn back to normal position
+	}
+	
+	
+	
+	
+	/*
+	 * GENERAL CONTROLS
+	 */
+	
+	
+	
+	/*
+	 * ENGINE CONTROLS 
+	 */
+	
+	/**
+	 * True, if the sensor is in range
+	 * 
+	 * New: Now it only checks one specific max at moving
+	 */
+	public boolean engineIsInRange() {
+		if (de.getLiveSensorEngineState() == 1 &&								// only when sensor is on right-turn
+			getEngineRealTachoCount() <= de.getSensorRangeMaxRight()) {			// and not at max-right
 			
-			reverseDirection();
+			return true;
+		}
+		else if (de.getLiveSensorEngineState() == 1 &&							// only when sensor is on left-turn
+				getEngineRealTachoCount() <= de.getSensorRangeMaxRight()) {		// and not at max-left
+			
+			return true;
+		}
+		
+		switch (de.getLiveSensorEngineState()) {
+			case (1):															// on right-turn
+				if (getEngineRealTachoCount() <= de.getSensorRangeMaxRight()) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			
+			case (-1):															// on left-turn
+				if (getEngineRealTachoCount() >= de.getSensorRangeMaxLeft()) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			
+			default:
+				if (getEngineRealTachoCount() <= de.getSensorRangeMaxRight() &&
+					getEngineRealTachoCount() >= de.getSensorRangeMaxLeft()) {
+					return true;
+				}
+				else {
+					return false;
+				}
 		}
 	}
 	
-	
-	/**
-	 * This will reverse the moving direction of the sensor.
-	 */
-	public static void reverseDirection() {
-		direction = direction * -1;																	// reverse the moving-direction
+	public void engineTurnTo(int degree) {
+		if (degree >= de.getSensorRangeMaxLeft() ||								// check, if turnTo degree is in range
+			degree <= de.getSensorRangeMaxRight()) {							// it is..
 		
-		if (foundBlack) {																			// If black surface was found...
-			blackBeforeReverse = true;																// ...found black before reverse -> true
-			foundBlack = false;																		// ...in this direction nothing black was found (yet)
-			reverseCounter = 0;																		// ...reset direction-change-counter
-			
-			if (getRealTachoCount() != lastPosition) {												// if new position isn't the same as last position...
-				penultimatePosition = lastPosition;													// ...last got memorized
-				lastPosition = getRealTachoCount();													// ...yeah, this position is now the last one
+			if (getEngineRealTachoCount() < degree) {							// sensor is somewhere left from target
+				engineTurnRight();
 				
-				setLinePosition();																	// ...go, do it!
+				while (engineIsInRange() && getEngineRealTachoCount() < degree) {}
 			}
-		}
-		else {																						// No black surface was found...
-			reverseCounter++;																		// ...count that fail!
+			else if (getEngineRealTachoCount() > degree) {						// sensor is somewhere right from target
+				engineTurnLeft();
+				
+				while (engineIsInRange() && getEngineRealTachoCount() > degree) {}
+			}
+			
+			engineStop();
+			
 		}
 	}
 	
+	/**
+	 * reset TachoCount
+	 */
+	private void engineResetTachoCount() {
+		Motor.B.resetTachoCount();
+	}
 	
 	/**
 	 * Let the sensor do a left turn
 	 */
-	public static void turnLeft() {
+	public void engineTurnLeft() {
+		de.setSensorActive(true);
+		de.setLiveSensorEngineState(-1);
 		Motor.B.forward();
 	}
-	
 	
 	/**
 	 * Let the sensor do a right turn
 	 */
-	public static void turnRight() {
+	public void engineTurnRight() {
+		de.setSensorActive(true);
+		de.setLiveSensorEngineState(1);
 		Motor.B.backward();
 	}
 	
-	
 	/**
-	 * Check, if a given color is in the tolerance-range
-	 * 
-	 * @param paraColor color which should be checked
+	 * Stop moving
 	 */
-	private static boolean checkColor(int paraColor) {
-		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
-		if (ls.readNormalizedValue() >= (paraColor - colorTolerance) &&								// yeah, it's the color!
-			ls.readNormalizedValue() <= (paraColor + colorTolerance))
-		{
-			return true;
-		}
-		else {																						// nope..
-			return false;
-		}
-	}
-	
-	private static boolean checkForWhite() {
-		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
-		if (ls.readNormalizedValue() >= colorWhite) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	
-	private static boolean checkForBlack() {
-		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
-		if (ls.readNormalizedValue() <= colorBlack) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	
-	
-	/**
-	 * Check, if the sensor is in the moving-range
-	 */
-	private static boolean checkMovingRange() {
-		if (getRealTachoCount() > maxLeft + brakingCompensation &&									// sensor is in range
-			getRealTachoCount() < maxRight - brakingCompensation)
-		{
-			return true;
-		}
-		else {																						// sensor isn't in range
-			return false;
-		}
-	}
-
-	
-	private static void setLinePosition() {
-		linePosition = (int) Math.round(((penultimatePosition + lastPosition) / 2) * 1.5);			// average * sensorDegree-to-normalDegree
-		de.setLinePosition(linePosition);	
-	}
-	
-	
-	
-	/* *****************************
-	 * SETTER
-	 * *****************************/
-	
-	/**
-	 * Set the moving-speed of the sensor and calculate some extra space for
-	 * an extra breaking-range
-	 * 
-	 * @param paraSpeed
-	 */
-	public static void setSpeed(int paraSpeed) {
-		sensorSpeed = paraSpeed;
-		Motor.B.setSpeed(paraSpeed);
-		brakingCompensation = Math.round((paraSpeed / 200) * 10);									// calculate some extra braking-distance
+	public void engineStop() {
+		Motor.B.stop();
+		de.setSensorActive(false);
+		de.setLiveSensorEngineState(0);
 	}
 	
 	/**
-	 * set color-reflections
-	 *  all parameters are in 'normalized values' (not percentages!)
-	 * 
-	 * @param valueWhite reflection of white surfaces
-	 * @param valueBlack reflection of black surfaces
-	 * @param valueTolerance tolerance range
+	 * True, if the sensor-engine is moving
 	 */
-	public static void setColor(int valueWhite, int valueBlack, int valueTolerance) {
-		colorWhite = valueWhite;
-		colorBlack = valueBlack;
-		colorTolerance = valueTolerance;
-	}
-	
-	
-	/**
-	 * set sensor's "freedom of movement"
-	 * 	x < 0	left
-	 *  x = 0	center
-	 *  x > 0	right
-	 * 
-	 * @param paraLeft maximum in the left (value lower then 0)
-	 * @param paraRight maximum in the right (value higher then 0)
-	 */
-	public static void setMovement(int paraLeft, int paraRight) {
-		maxLeft = paraLeft;
-		maxRight = paraRight;
-	}
-	
-
-	/**
-	 * Set the default values of color-reflections
-	 */
-	public static void setDefaultColor() {
-		setColor(defaultColorWhite, defaultColorBlack, defaultColorTolerance);						// White, Black, Tol.
-	}
-	
-	
-	/**
-	 * Set the default moving-range of th sensor
-	 */
-	public static void setDefaultMovement() {
-		setMovement(defaultMaxLeft, defaultMaxRight);												// left, right
+	public boolean engineIsMoving() {
+		return Motor.B.isMoving();
 	}
 	
 	
 	
-	/* *****************************
-	 * GETTER
-	 * *****************************/
+	/*
+	 * SENSOR CONTROLS
+	 */
+	
+	
+	
+	
+	
+/* *****************************
+ * SETTER METHODS
+ * *****************************/
+	
+	/*
+	 * ENGINE SETTER
+	 */
+	public void setEngineSpeed(int speed) {
+		Motor.B.setSpeed(speed);
+	}
+	
+	
+	
+	
+	
+/* *****************************
+ * GETTER METHODS
+ * *****************************/
+	
+	/*
+	 * ENGINE GETTER
+	 */
 	
 	/**
 	 * Returns negated Motor-Tacho-Count (2-factor-gearing)
 	 * 
 	 * @return negated TachoCount
 	 */
-	private static int getRealTachoCount() {
+	public int getEngineRealTachoCount() {
 		return Motor.B.getTachoCount() * -1;
 	}
 	
 	
-	public static int getLine() {
-		return linePosition;
+	/*
+	 * SENSOR GETTER
+	 */
+	public int getSensorValue() {
+		return ls.readNormalizedValue();
 	}
 	
 	
-	public static boolean isBlack() {
-		return foundBlack;
-	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//	/* *****************************
+//	 * VARIABLE DECLARATION
+//	 * *****************************/
+//	static dataExchange de;
+//	
+//	private static int colorWhite;																// Wert auf weißen Oberflächen
+//	private static int colorBlack;																// Wert auf schwarzen Oberflächen
+//	private static int colorTolerance;															// Toleranz in Einheiten
+//	
+//	private static int maxLeft;																	// maximale Sensorstellung: links
+//	private static int maxRight;																// maximale Sensorstellung: rechts
+//	
+//	private static int linePosition = 0;														// line's position in normal degree
+//	private static int lastPosition = 0;														// last seen position
+//	private static int penultimatePosition = 0;													// penultimated position (last memorized)
+//	
+//	private static boolean 	go = true;															// TRUE = arbeitend, FALSE = nicht arbeitend
+//	private static int 		direction = 1;														// Sensor Bewegungsrichtung (1 = right, -1 = left)
+//	private static int 		lastDirection;														// Direction before change
+//	private static boolean 	changeDirection = false;											// true, if direction-change is incoming (while-break)
+//	private static boolean 	blackBeforeReverse = false;											// true, if before a reverse was black found, false if not
+//	private static boolean 	foundBlack = false;													// set true, if black was found (just reverse set it false)
+//	private static int 		reverseCounter = 0;													// reverse-counter, if there wasn't a black-found before
+//	
+//	private static int hardwareLagg = 100;														// Thread sleeping for ...ms to compensate the hardware-lagg
+//	private static int sensorSpeed = 50;														// speed of the sensor, calculates braking-distance
+//	private static int brakingCompensation;														// the faster the sensor, the higher the braking-distance - a balancer
+//	
+//	
+//	/*
+//	 * OBJECTS
+//	 */
+//	private static LightSensor ls = new LightSensor(SensorPort.S1);								// LightSensor initiieren
+//	
+//	
+//	/*
+//	 * DEFAULTS
+//	 */
+//	private static int defaultColorWhite = 550;
+//	private static int defaultColorBlack = 400;
+//	private static int defaultColorTolerance = 25;
+//	
+//	private static int defaultMaxLeft = -60;													// 1 sensor-degree == 1,5 degree
+//	private static int defaultMaxRight = 60;
+//	
+//
+//	
+//	
+//
+//	
+//	
+//	/**
+//	 * Sensor will find and follow the black line.
+//	 * The variable 'position' will be set to the current position of the sensor.
+//	 * 
+//	 * At start the sensor has to be in center-position!
+//	 * 
+//	 * @throws InterruptedException 
+//	 */
+//	public static void searchLine() {
+//		// TODO: add here the new concept
+//		Motor.B.resetTachoCount();																	// 0 degree at start :-)
+//		
+//		setSpeed(sensorSpeed);																		// set some values..
+//		setDefaultColor();
+//		setDefaultMovement();
+//		
+//		while(go) {																					// start moving!
+//			changeDirection = false;
+//			
+//			if (direction == 1) {																	// turn right
+//				turnRight();
+//			}
+//			else if (direction == -1) {																// turn left
+//				turnLeft();
+//			}
+//
+//			try {																					// workaround for multithreading
+//				Thread.sleep(hardwareLagg);															// compensate hardware-lagg
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//			}																
+//			
+//			while (checkMovingRange() && !changeDirection && go) {									// sensor is in range...
+//				if (checkForWhite() && foundBlack) {												// Detected white surface after a black surface
+//					changeDirection = true;
+//				}
+//				else if (checkForBlack()) {															// Detected black surface
+//					foundBlack = true;
+//				}
+//				else {																				// Detected sth. other...
+//					/* ignore */
+//				}
+//			}
+//			
+//			reverseDirection();
+//		}
+//	}
+//	
+//	
+//	/**
+//	 * This will reverse the moving direction of the sensor.
+//	 */
+//	public static void reverseDirection() {
+//		// TODO: IMPORTANT! need a new concept
+//		direction = direction * -1;																	// reverse the moving-direction
+//		
+//		if (foundBlack) {																			// If black surface was found...
+//			blackBeforeReverse = true;																// ...found black before reverse -> true
+//			foundBlack = false;																		// ...in this direction nothing black was found (yet)
+//			reverseCounter = 0;																		// ...reset direction-change-counter
+//			
+//			if (getRealTachoCount() != lastPosition) {												// if new position isn't the same as last position...
+//				penultimatePosition = lastPosition;													// ...last got memorized
+//				lastPosition = getRealTachoCount();													// ...yeah, this position is now the last one
+//				
+//				setLinePosition();																	// ...go, do it!
+//			}
+//		}
+//		else {																						// No black surface was found...
+//			reverseCounter++;																		// ...count that fail!
+//		}
+//	}
+//	
+//	
+//	
+//	
+//	
+//	/**
+//	 * True, if the surface is like white.
+//	 * 
+//	 * @return
+//	 */
+//	private static boolean checkForWhite() {
+//		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
+//		if (ls.readNormalizedValue() >= colorWhite) {
+//			return true;
+//		}
+//		else {
+//			return false;
+//		}
+//	}
+//	
+//	
+//	/**
+//	 * True, if the surface is like black.
+//	 * 
+//	 * @return
+//	 */
+//	private static boolean checkForBlack() {
+//		LCD.drawInt(ls.readNormalizedValue(), 1, 5);
+//		if (ls.readNormalizedValue() <= colorBlack) {
+//			return true;
+//		}
+//		else {
+//			return false;
+//		}
+//	}
+//	
+//	
+//	/**
+//	 * Check, if the sensor is in the moving-range
+//	 */
+//	private static boolean checkMovingRange() {
+//		if (getRealTachoCount() > maxLeft + brakingCompensation &&									// sensor is in range
+//			getRealTachoCount() < maxRight - brakingCompensation)
+//		{
+//			return true;
+//		}
+//		else {																						// sensor isn't in range
+//			return false;
+//		}
+//	}
+//
+//	
+//	private static void setLinePosition() {
+//		linePosition = (int) Math.round(((penultimatePosition + lastPosition) / 2) * 1.5);			// average * sensorDegree-to-normalDegree
+//		de.setLinePosition(linePosition);	
+//	}
+//	
+//	
+//	
+//	/* *****************************
+//	 * SETTER
+//	 * *****************************/
+//	
+//	/**
+//	 * Set the moving-speed of the sensor and calculate some extra space for
+//	 * an extra breaking-range
+//	 * 
+//	 * @param paraSpeed
+//	 */
+//	public static void setSpeed(int paraSpeed) {
+//		sensorSpeed = paraSpeed;
+//		Motor.B.setSpeed(paraSpeed);
+//		brakingCompensation = Math.round((paraSpeed / 200) * 10);									// calculate some extra braking-distance
+//	}
+//	
+//	/**
+//	 * set color-reflections
+//	 *  all parameters are in 'normalized values' (not percentages!)
+//	 * 
+//	 * @param valueWhite reflection of white surfaces
+//	 * @param valueBlack reflection of black surfaces
+//	 * @param valueTolerance tolerance range
+//	 */
+//	public static void setColor(int valueWhite, int valueBlack, int valueTolerance) {
+//		colorWhite = valueWhite;
+//		colorBlack = valueBlack;
+//		colorTolerance = valueTolerance;
+//	}
+//	
+//	
+//	/**
+//	 * set sensor's "freedom of movement"
+//	 * 	x < 0	left
+//	 *  x = 0	center
+//	 *  x > 0	right
+//	 * 
+//	 * @param paraLeft maximum in the left (value lower then 0)
+//	 * @param paraRight maximum in the right (value higher then 0)
+//	 */
+//	public static void setMovement(int paraLeft, int paraRight) {
+//		maxLeft = paraLeft;
+//		maxRight = paraRight;
+//	}
+//	
+//
+//	/**
+//	 * Set the default values of color-reflections
+//	 */
+//	public static void setDefaultColor() {
+//		setColor(defaultColorWhite, defaultColorBlack, defaultColorTolerance);						// White, Black, Tol.
+//	}
+//	
+//	
+//	/**
+//	 * Set the default moving-range of th sensor
+//	 */
+//	public static void setDefaultMovement() {
+//		setMovement(defaultMaxLeft, defaultMaxRight);												// left, right
+//	}
+//	
+//	
+//	
+//	/* *****************************
+//	 * GETTER
+//	 * *****************************/
+//	
+//	
+//	public static int getLine() {
+//		return linePosition;
+//	}
+//	
+//	
+//	public static boolean isBlack() {																// srsly dude?
+//		return foundBlack;
+//	}
 
 }

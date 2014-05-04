@@ -50,7 +50,7 @@ public class engine extends Thread {
 		forward();
 		
 		while(isMoving()) {
-			steer(de.getLinePosition());
+			steer(de.getLiveLinePosition());
 			
 			if (Button.ENTER.isDown()) {
 				break;

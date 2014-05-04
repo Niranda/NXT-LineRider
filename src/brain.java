@@ -41,12 +41,20 @@ public class brain {
 	 * METHODS
 	 * *****************************/
 	public static void main(String[] args)throws Exception {
-		de = new dataExchange();
-		sensor = new movingSensor(de);
-		engine = new engine(de);
-		engine.setSpeed(5);
-		sensor.setSpeed(75);
+		de = new dataExchange();												// Data Exchanger (communicate between tasks)
 		
+		sensor = new movingSensor(de);											// 'Task' for the sensor
+		engine = new engine(de);												// 'Task' for the engine
+		
+		// TODO: set defaults
+		engine.setSpeed(5);
+//		sensor.setSpeed(75);
+		
+		// TODO: let the sensor learn the colors (of today)
+		
+		/*
+		 * Start the threads
+		 */
 		sensor.start();
 		engine.start();
 		
