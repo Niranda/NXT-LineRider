@@ -37,6 +37,13 @@ public class movingSensor extends Thread {
 	
 	private dataExchange de;
 	private LightSensor ls = new LightSensor(SensorPort.S1);
+
+	private boolean loc_beforeReverseWasBlack = false;
+	private boolean loc_beforeReverseWasWhite = false;
+	private boolean loc_lastReadWasBlack = false;
+	private boolean loc_lastReadWasWhite = false;
+	
+	private boolean loc_reverse = false;
 	
 	
 	
@@ -53,8 +60,9 @@ public class movingSensor extends Thread {
 	public static void main(String[] args)throws Exception  {
 		LCD.drawString("SENSOR TESTMODE", 1, 1);
 		LCD.drawString("Hit ENTER + ESC to stop", 1, 2);
-		// TODO: do random stuff
-		ms.initialize();
+		
+		ms.loadDefault();
+		ms.followLine();
 		
 	}
 	
@@ -119,12 +127,35 @@ public class movingSensor extends Thread {
 		}
 		engineTurnTo(0);														// turn back to middle
 		
+		setEngineSpeed(75);
+		
 		sfx.beep();
+	}
+	
+	public void loadDefault() {
+		de.setInitSensorColorWhite(550);
+		de.setInitSensorColorBlack(350);
+		de.setSensorColorTolerance(10);
+		setEngineSpeed(200);
 	}
 	
 	
 	public void followLine() {
-		while (de.getSensorActive()) {											// if sensor active -> LF line
+//		de.setSensorState(1); // TODO test
+		
+		while (de.getSensorActive() /*|| true*/) {											// if sensor active -> LF line
+			if (sensorIsBlack()) {												// get current color
+				loc_lastReadWasBlack = true;
+			}
+			else if (sensorIsWhite()) {
+				loc_lastReadWasWhite = true;
+			}
+			else {
+				loc_lastReadWasBlack = false;
+				loc_lastReadWasWhite = false;
+			}
+			
+			
 			switch (de.getSensorState()) {										// check next direction
 				case -1:
 					engineTurnLeft();
@@ -134,15 +165,33 @@ public class movingSensor extends Thread {
 					engineTurnRight();
 					break;
 					
-				default:
+				default:														// sth. went wrong -> stop!
+					sfx.beep();
 					break;
 			}
 			
-			while (engineIsMoving()) {											// as long as sensor is moving...
-				if (sensorCheckForWhite()) {
-// TODO: überdenken, was ist wenn nur weiß vorhanden ist?? D:					
+			
+			while (	engineIsMoving() &&											// as long as: 	... engine is moving
+					de.getSensorActive() &&										//				... sensor is turned on
+					engineIsInRange() &&										//				... engine is moving in range
+					!loc_reverse)												//				... engine should NOT reverse
+			{
+
+				if (sensorIsBlack() && loc_lastReadWasBlack) {					// no colorchange (black)
+					
+				}
+				else if (sensorIsWhite() && loc_lastReadWasWhite) {				// no colorchange (white)
+					
+				}
+				else {															// color changed!
+					loc_reverse = true;											// reverse direction
+					
+					loc_beforeReverseWasBlack = loc_lastReadWasBlack;			// remember last colors
+					loc_beforeReverseWasWhite = loc_lastReadWasWhite;
 				}
 			}
+			
+			engineReverse();
 		}
 		
 		engineTurnTo(0);														// At any end: turn back to normal position
@@ -167,17 +216,6 @@ public class movingSensor extends Thread {
 	 * New: Now it only checks one specific max at moving
 	 */
 	public boolean engineIsInRange() {
-		if (de.getLiveSensorEngineState() == 1 &&								// only when sensor is on right-turn
-			getEngineRealTachoCount() <= de.getSensorRangeMaxRight()) {			// and not at max-right
-			
-			return true;
-		}
-		else if (de.getLiveSensorEngineState() == 1 &&							// only when sensor is on left-turn
-				getEngineRealTachoCount() <= de.getSensorRangeMaxRight()) {		// and not at max-left
-			
-			return true;
-		}
-		
 		switch (de.getLiveSensorEngineState()) {
 			case (1):															// on right-turn
 				if (getEngineRealTachoCount() <= de.getSensorRangeMaxRight()) {
@@ -204,6 +242,12 @@ public class movingSensor extends Thread {
 					return false;
 				}
 		}
+	}
+	
+	public void engineReverse() {
+		engineStop();
+		de.setSensorState(de.getSensorState() * -1);
+		loc_reverse = false;
 	}
 	
 	public void engineTurnTo(int degree) {
@@ -272,6 +316,32 @@ public class movingSensor extends Thread {
 	/*
 	 * SENSOR CONTROLS
 	 */
+	public void sensorRead() {
+		sensorIsBlack();
+		sensorIsWhite();
+	}
+	
+	public boolean sensorIsBlack() {
+		if (getSensorValue() - de.getSensorColorTolerance() <= de.getInitSensorColorBlack()) {		// current color - tolerance is lower than black...
+			de.setLiveSensorColorIsBlack(true);
+		}
+		else {
+			de.setLiveSensorColorIsBlack(false);
+		}
+		
+		return de.getLiveSensorColorIsBlack();
+	}
+	
+	public boolean sensorIsWhite() {
+		if (getSensorValue() + de.getSensorColorTolerance() >= de.getInitSensorColorWhite()) {		// current color + tolerance is larger than white...
+			de.setLiveSensorColorIsWhite(true);
+		}
+		else {
+			de.setLiveSensorColorIsWhite(false);
+		}
+		
+		return de.getLiveSensorColorIsWhite();
+	}
 	
 	
 	
@@ -285,6 +355,7 @@ public class movingSensor extends Thread {
 	 * ENGINE SETTER
 	 */
 	public void setEngineSpeed(int speed) {
+		de.setSensorSpeed(speed);
 		Motor.B.setSpeed(speed);
 	}
 	
