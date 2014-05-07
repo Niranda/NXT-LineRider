@@ -29,10 +29,6 @@
 	left: 270px;
 }
 
-#content {
-	display: none;
-}
-
 #contentHolderCloser {
 	display: block;
 	position: absolute;

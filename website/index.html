@@ -81,8 +81,10 @@
 				<a href="http://twitter.com/Niranda" target="_BLANK"><i class="footerButton button fa fa-lg fa-twitter"></i></a>
 				<a href="https://www.facebook.com/profile.php?id=100008230500562" target="_BLANK"><i class="footerButton button fa fa-lg fa-facebook"></i></a>
 				<a href="#" target="_BLANK"><i class="footerButton button fa fa-lg fa-google-plus"></i></a>
+				<a href="https://www.xing.com/profile/Arne_Wandt" target="_BLANK"><i class="footerButton button fa fa-lg fa-xing"></i></a>
 				<a href="#" target="_BLANK"><i class="footerButton button fa fa-lg fa-youtube"></i></a>
 				<a href="http://github.com/Niranda" target="_BLANK"><i class="footerButton button fa fa-lg fa-github"></i></a>
+				
 			</div>
 		</div>
 		
@@ -105,14 +107,65 @@
 		
 			<!-- Das Projekt -->
 			<div class="contentHtmlBoxes" id="content_cProject">
+				<h1>Mobile Agenten</h1>
 				<p>
-					Im Rahmen des Projektes "Mobile Agenten" der Hochschule Wismar soll eine Vertiefung der bisherigen Kenntnisse und algorithmisches Denken erreicht werden. Die Lego NXT Hardware bietet dafür eine passende, praktische Grundlage für die entwickelten Lösungen.
-					
+					Dies ist ein Projekt der Fachhochschule Wismar, Studiengang: Wirtschaftsinformatik.
+					Die mobilen Agenten sollen den Studenten beim Festigen von Java helfen, als auch ein
+					neues Verständnis u.A. in Ungenauigkeiten beibringen.
 				</p>
+				
+				<h2>Das Team</h2>
+				<p>
+					Aufgrund der (leider) geringen Teilnehmerzahl an diesem Modul existieren
+					lediglich zwei Teams zu je einer Person.
+					Das Team B besteht im SS2014 nur aus mir, Arne Wandt, Fachinformatiker für
+					Anwendungsentwicklung und Wirtschaftsinformatiker an der HS Wismar.
+				</p>
+				
+				<h2>Intentionen</h2>
+				<p>
+					Ich interessiere mich für Roboter, sowie autonome und intelligente Systeme.
+					So passte ich bereits Apples Siri meinen Bedürfnissen an (<a target="_BLANK" href="https://github.com/Niranda/SiriProxy-NiraProxy"><i class="fa fa-external-link"></i> NiraProxy</a>)
+					Aufgrund der Hardwarepreise, besonders bei Servo-Motoren für Quadpods,
+					geschweige denn Hexapods blieb die Hardwareseite in dieser Richtung auf der Strecke.
+					Hier bot sich das Projekt "Mobile Agenten" perfekt an.
+				</p>
+				<p>
+					Desweiteren ist dies eine gute Übung, Vertiefung und Festigung von Java-Kenntnissen.
+					Multithreading ist ein ebenso spannendes, wie auch passendes Thema. Das Projekt bietet
+					mir somit eine gute Umgebung zum experiemtieren komplexer Systeme.
+				</p>
+				
+				<!--
+				<div style="background-image:url('./img/siri.jpg'); background-repeat: no-repeat; background-size: 325px; width: 325px auto; height: 253px;">
+				</div>
+				-->
 			</div>
 			
 			<!-- LineRider -->
 			<div class="contentHtmlBoxes" id="content_cLineRider">
+				<h1>LineRider</h1>
+				<p>
+					Die Aufgabe aus diesem Teilprojekt besteht darin, den Roboter einer vorgegebenen Linie
+					folgen zu lassen. Die Linie ist schwarz, ca. 2cm breit und auf einem Weißen Untergrund.
+					Dabei durchläuft der Rundkurs grasgrüne und violette Flächen, welche einen Störfaktor
+					bilden. Des weiteren besitzt der Roboter nur einen Helligkeitssensor.
+				</p>
+				<p>
+					Die Aufgabe an sich ließe sich recht leicht bewältigen, da die Grundidee darin besteht,
+					dass sich der Roboter nur vorwärts bewegt, wenn der Sensor "schwarz" misst. Misst der
+					Sensor "weiß", so ist der Roboter zu stoppen und eine Drehung zu veranlassen, um die
+					Linie wieder zu finden. Diese Drehung sollte in 3 Bereiche (je 45°) unterteilt werden, damit die
+					Suchzeit möglichst gering ausfällt.
+				</p>
+				
+				<h1>Experiment: Bewegter Sensor</h1>
+				<p>
+					In meiner Idee besitzt der Roboter einen beweglichen Sensor in der Front. Dieser soll stets
+					die Linie von Kante zu Kante "abtasten". Dabei übergibt der Sensor einem "DataExchange"-Objekt
+					die aktuelle Linienposition in Grad. Diese Information soll von den Motoren entsprechend umgesetzt werden.
+					D.h., dass der Roboter immer versucht, den Abtastbereich des Sensors direkt vor sich bei 0° zu halten.
+				</p>
 			</div>
 		
 			<!-- Balancer -->

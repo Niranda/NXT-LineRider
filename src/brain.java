@@ -30,7 +30,7 @@ public class brain {
 	/*
 	 * OBJECTS
 	 */
-	private static DataExchange de;
+	private static dataExchange de;
 	private static movingSensor sensor;
 	private static engine engine;
 //	private monitor monitor = new monitor();
@@ -41,9 +41,11 @@ public class brain {
 	 * METHODS
 	 * *****************************/
 	public static void main(String[] args)throws Exception {
-		de = new DataExchange();
+		de = new dataExchange();
 		sensor = new movingSensor(de);
 		engine = new engine(de);
+		engine.setSpeed(5);
+		sensor.setSpeed(150);
 		
 		sensor.start();
 		engine.start();
